@@ -1,20 +1,35 @@
 # Current Feature
 
-<!-- Feature Name -->
+Dashboard Collections — Wire to Real Database Data
 
 ## Status
 
 <!-- Not Started|In Progress|Completed -->
 
-Completed
+In Progress
 
 ## Goals
 
 <!-- Goals & requirements -->
 
+Replace the dummy collection data shown in the dashboard's main area with real data from the Neon database via Prisma. Keep the current 6-card RecentCollections design (per `context/screenshots/dashboard-ui-main.png`); only the data source changes.
+
+Requirements (from `context/features/dashboard-collections-spec.md`):
+
+- Create `src/lib/db/collections.ts` with data fetching functions
+- Fetch collections directly in the server component
+- Collection card border color derived from the most-used content type in that collection
+- Show small icons of all types present in that collection
+- Keep the current design
+- Update the collection stats display
+
+Out of scope: items underneath each collection (handled later).
+
 ## Notes
 
 <!-- Any extra notes -->
+
+Spec: `context/features/dashboard-collections-spec.md`. Design reference: `context/screenshots/dashboard-ui-main.png`. Data source: Neon Postgres via Prisma 7 (`src/lib/prisma.ts`); mock data to be removed from `src/lib/mock-data.ts` usage in this area.
 
 ## History
 
