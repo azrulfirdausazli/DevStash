@@ -4,7 +4,27 @@
 
 <!-- Not Started|In Progress|Completed -->
 
-Completed
+In Progress
+
+## Goals
+
+<!-- Current feature goals. Update as scope is refined. -->
+
+**Dashboard Items — Wire to Real Database Data** (branch: `feature/dashboard-items-db`)
+
+Replace the dummy item data in the dashboard's main area (right side) with real data from Neon via Prisma. Covers both **Pinned Items** and **Recent Items** sections. Source spec: `context/features/dashboard-items-spec.md`.
+
+In scope (per spec):
+- Create `src/lib/db/items.ts` with data fetching functions
+- Fetch items directly in the server component
+- Derive item card icon/border color from the item's type
+- Display item type tags and any other existing affordances; reference `context/screenshots/dashboard-ui-main.png` as needed
+- Update the collection stats display
+- If no pinned items exist, hide the Pinned section entirely
+
+Out of scope (handled in other features):
+- Collections section + 2 collection-related stat cards (already done in `feature/dashboard-collections-db`)
+- The 2 item-related stat cards (Items, Favorite Items) — later feature
 
 ## History
 
