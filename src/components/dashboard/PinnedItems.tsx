@@ -1,35 +1,13 @@
-import {
-  Pin,
-  Star,
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  File,
-  Image as ImageIcon,
-  Link as LinkIcon,
-} from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-import { mockItems } from '@/lib/mock-data';
-
-const TYPE_MAP: Record<string, { icon: LucideIcon; color: string }> = {
-  type_1: { icon: Code, color: '#3b82f6' },
-  type_2: { icon: Sparkles, color: '#8b5cf6' },
-  type_3: { icon: Terminal, color: '#f97316' },
-  type_4: { icon: StickyNote, color: '#fde047' },
-  type_5: { icon: File, color: '#6b7280' },
-  type_6: { icon: ImageIcon, color: '#ec4899' },
-  type_7: { icon: LinkIcon, color: '#10b981' },
-};
+import { Pin, Star } from "lucide-react";
+import type { DashboardItem } from "@/lib/db/items";
+import { getIcon } from "@/lib/db/icons";
 
 function formatDate(date: Date): string {
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-export default function PinnedItems() {
-  const pinnedItems = mockItems.filter((item) => item.isPinned);
-
-  if (pinnedItems.length === 0) return null;
+export default function PinnedItems({ items }: { items: DashboardItem[] }) {
+  if (items.length === 0) return null;
 
   return (
     <section>
@@ -38,10 +16,9 @@ export default function PinnedItems() {
         <h2 className="text-lg font-semibold">Pinned</h2>
       </div>
       <div className="flex flex-col gap-3">
-        {pinnedItems.map((item) => {
-          const type = TYPE_MAP[item.itemTypeId] ?? { icon: Code, color: '#6b7280' };
-          const { icon: Icon, color } = type;
-
+        {items.map((item) => {
+          const { itemType } = item;
+          const Icon = getIcon(itemType.icon);
           return (
             <div
               key={item.id}
@@ -49,9 +26,9 @@ export default function PinnedItems() {
             >
               <div
                 className="size-9 rounded-lg flex items-center justify-center shrink-0"
-                style={{ backgroundColor: `${color}22` }}
+                style={{ backgroundColor: `${itemType.color}22` }}
               >
-                <Icon className="size-4" style={{ color }} />
+                <Icon className="size-4" style={{ color: itemType.color }} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-1">
@@ -65,12 +42,12 @@ export default function PinnedItems() {
                 )}
                 {item.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
-                    {item.tags.map((tag) => (
+                    {item.tags.map((t) => (
                       <span
-                        key={tag}
+                        key={t.name}
                         className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground"
                       >
-                        {tag}
+                        {t.name}
                       </span>
                     ))}
                   </div>
