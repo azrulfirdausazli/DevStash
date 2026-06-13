@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { prisma } from "../src/lib/prisma";
 import { getCurrentUserId } from "../src/lib/db/user";
 
 async function main() {
@@ -14,6 +15,5 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    const { prisma } = await import("../src/lib/prisma");
     await prisma.$disconnect();
   });
