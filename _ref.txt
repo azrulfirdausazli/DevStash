@@ -110,3 +110,17 @@ also highlight the dependency of using superpower skill in history
 
 commit the features branch , merge with main , push main ,delete the feature branch
 
+
+36)
+Add a new current features to the @context/current-feature.md  file to seed some data.
+Reference the @context/features/seed-spec.md to get the data should be added. 
+you can override what is in the current seed file.
+
+
+open a new branch and implement the current features , 
+
+update the @script/test-db.ts to fetch the demo data and display and make sure evrything works
+
+set the current feature to be complete, ,remove the info ,remove the goals and add it to history
+
+commit the features branch , merge with main , push main ,delete the feature branch
