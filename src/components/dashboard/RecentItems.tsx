@@ -1,36 +1,12 @@
-import {
-  Clock,
-  Star,
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  File,
-  Image as ImageIcon,
-  Link as LinkIcon,
-} from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-import { mockItems } from '@/lib/mock-data';
-
-const TYPE_MAP: Record<string, { icon: LucideIcon; color: string }> = {
-  type_1: { icon: Code, color: '#3b82f6' },
-  type_2: { icon: Sparkles, color: '#8b5cf6' },
-  type_3: { icon: Terminal, color: '#f97316' },
-  type_4: { icon: StickyNote, color: '#fde047' },
-  type_5: { icon: File, color: '#6b7280' },
-  type_6: { icon: ImageIcon, color: '#ec4899' },
-  type_7: { icon: LinkIcon, color: '#10b981' },
-};
+import { Clock, Star } from "lucide-react";
+import type { DashboardItem } from "@/lib/db/items";
+import { getIcon } from "@/lib/db/icons";
 
 function formatDate(date: Date): string {
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-export default function RecentItems() {
-  const recentItems = [...mockItems]
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-    .slice(0, 10);
-
+export default function RecentItems({ items }: { items: DashboardItem[] }) {
   return (
     <section>
       <div className="flex items-center gap-2 mb-4">
@@ -38,10 +14,9 @@ export default function RecentItems() {
         <h2 className="text-lg font-semibold">Recent Items</h2>
       </div>
       <div className="flex flex-col gap-2">
-        {recentItems.map((item) => {
-          const type = TYPE_MAP[item.itemTypeId] ?? { icon: Code, color: '#6b7280' };
-          const { icon: Icon, color } = type;
-
+        {items.map((item) => {
+          const { itemType } = item;
+          const Icon = getIcon(itemType.icon);
           return (
             <div
               key={item.id}
@@ -49,9 +24,9 @@ export default function RecentItems() {
             >
               <div
                 className="size-8 rounded-lg flex items-center justify-center shrink-0"
-                style={{ backgroundColor: `${color}22` }}
+                style={{ backgroundColor: `${itemType.color}22` }}
               >
-                <Icon className="size-3.5" style={{ color }} />
+                <Icon className="size-3.5" style={{ color: itemType.color }} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
@@ -67,12 +42,12 @@ export default function RecentItems() {
               <div className="flex items-center gap-3 shrink-0">
                 {item.tags.length > 0 && (
                   <div className="hidden sm:flex items-center gap-1">
-                    {item.tags.slice(0, 2).map((tag) => (
+                    {item.tags.slice(0, 2).map((t) => (
                       <span
-                        key={tag}
+                        key={t.name}
                         className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground"
                       >
-                        {tag}
+                        {t.name}
                       </span>
                     ))}
                   </div>
