@@ -390,7 +390,7 @@ Expected: zero errors.
 - [ ] **Step 3: Run the full smoke test**
 
 Run: `npm run test:collections`
-Expected (counts depend on current seed):
+Expected (based on the current seed — Task 3 confirmed `favoriteCollectionCount = 0` because the seed never sets `isFavorite: true`):
 
 ```
 Looking up demo user...
@@ -398,19 +398,19 @@ Looking up demo user...
 
 Collection stats...
   collectionCount       = 5
-  favoriteCollectionCount = 3
+  favoriteCollectionCount = 0
 
 Dashboard collections (with dominant type)...
-  - React Patterns  [items=3, fav=true, dominant=snippet (#3b82f6)]  types=[snippet:3]
+  - React Patterns  [items=3, fav=false, dominant=snippet (#3b82f6)]  types=[snippet:3]
   - AI Workflows  [items=3, fav=false, dominant=prompt (#8b5cf6)]  types=[prompt:3]
-  - DevOps  [items=4, fav=false, dominant=snippet (#3b82f6)]  types=[snippet:1, link:2, command:1]
+  - DevOps  [items=4, fav=false, dominant=link (#10b981)]  types=[link:2, snippet:1, command:1]
   - Terminal Commands  [items=4, fav=false, dominant=command (#f97316)]  types=[command:4]
   - Design Resources  [items=4, fav=false, dominant=link (#10b981)]  types=[link:4]
 
 OK
 ```
 
-Note: order may differ if `updatedAt` collides — that's fine. Verify each collection's `itemCount`, `dominant`, and per-type breakdown matches the seed. The most important cross-check is `DevOps` having 3 distinct types (snippet/link/command) summing to 4, with `snippet` and `link` both at 2 — in that case alphabetical tiebreak puts `link` first. Adjust expectations if the seed has changed.
+Note: order may differ if `updatedAt` collides — that's fine. Verify each collection's `itemCount`, `dominant`, and per-type breakdown matches the seed. The most important cross-check is `DevOps` having 3 distinct types (link/snippet/command) summing to 4, with `link` having the highest count (2) — alphabetical tiebreak is irrelevant for DevOps since the counts are distinct. Adjust expectations if the seed has changed.
 
 - [ ] **Step 4: Commit**
 
@@ -607,12 +607,12 @@ Expected:
 - Each card has a left border in its dominant type's color:
   - React Patterns → blue (`#3b82f6`, snippet)
   - AI Workflows → purple (`#8b5cf6`, prompt)
-  - DevOps → green (`#10b981`, link) if link:2 > snippet:1 — otherwise blue (snippet:1, link:2) — actually with the alphabetical tiebreak on equal counts, the dominant for DevOps depends on which type is the highest count. Verify visually it matches the smoke-test output from Task 4 Step 3.
+  - DevOps → green (`#10b981`, link) — link has count 2 which is the highest
   - Terminal Commands → orange (`#f97316`, command)
   - Design Resources → green (`#10b981`, link)
-- The "Collections" stat card shows `5`; the "Favorite Collections" stat card shows `3`
+- The "Collections" stat card shows `5`; the "Favorite Collections" stat card shows `0` (current seed has no favorites; expected)
 - The "Items" and "Favorite Items" stat cards show `0` (placeholder; expected and documented)
-- The icons row at the bottom of each card reflects the actual types present (e.g., DevOps shows a snippet + command + 2 link icons)
+- The icons row at the bottom of each card reflects the actual types present (e.g., DevOps shows link + snippet + command icons in some order)
 
 If any of the above is wrong, do **not** commit — debug before continuing. (The smoke test in Task 4 is the authoritative source of truth for the data; the visual check confirms the UI mapping.)
 
