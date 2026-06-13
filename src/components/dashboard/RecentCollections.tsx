@@ -1,17 +1,14 @@
-import Link from 'next/link';
-import { Star, MoreHorizontal, Code, Sparkles, Terminal } from 'lucide-react';
-import { mockCollections } from '@/lib/mock-data';
+import Link from "next/link";
+import { Star, MoreHorizontal } from "lucide-react";
+import type { DashboardCollection } from "@/lib/db/collections";
+import { getIcon } from "@/lib/db/icons";
 
-const PREVIEW_ICONS = [
-  { icon: Code, color: '#3b82f6' },
-  { icon: Sparkles, color: '#8b5cf6' },
-  { icon: Terminal, color: '#f97316' },
-];
-
-export default function RecentCollections() {
-  const sorted = [...mockCollections].sort(
-    (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()
-  );
+export default function RecentCollections({
+  collections,
+}: {
+  collections: DashboardCollection[];
+}) {
+  const visible = collections.slice(0, 6);
 
   return (
     <section>
@@ -25,10 +22,15 @@ export default function RecentCollections() {
         </Link>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-        {sorted.map((collection) => (
+        {visible.map((collection) => (
           <div
             key={collection.id}
-            className="bg-card border border-border rounded-xl p-4 flex flex-col gap-2 group cursor-pointer hover:bg-muted/10 transition-colors"
+            className="bg-card border border-border border-l-4 rounded-xl p-4 flex flex-col gap-2 group cursor-pointer hover:bg-muted/10 transition-colors"
+            style={
+              collection.dominantType
+                ? { borderLeftColor: collection.dominantType.color }
+                : undefined
+            }
           >
             <div className="flex items-start gap-2">
               <div className="flex items-center gap-1.5 flex-1 min-w-0">
@@ -42,12 +44,17 @@ export default function RecentCollections() {
               </button>
             </div>
             <p className="text-xs text-muted-foreground">{collection.itemCount} items</p>
-            <p className="text-xs text-muted-foreground line-clamp-2 flex-1">{collection.description}</p>
-            <div className="flex items-center gap-1.5 pt-1">
-              {PREVIEW_ICONS.map(({ icon: Icon, color }, i) => (
-                <Icon key={i} className="size-3.5" style={{ color }} />
-              ))}
-            </div>
+            <p className="text-xs text-muted-foreground line-clamp-2 flex-1">
+              {collection.description}
+            </p>
+            {collection.types.length > 0 && (
+              <div className="flex items-center gap-1.5 pt-1">
+                {collection.types.map((t) => {
+                  const Icon = getIcon(t.icon);
+                  return <Icon key={t.name} className="size-3.5" style={{ color: t.color }} />;
+                })}
+              </div>
+            )}
           </div>
         ))}
       </div>
