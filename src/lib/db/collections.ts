@@ -32,3 +32,55 @@ export async function getDashboardCollectionStats(
   ]);
   return { collectionCount, favoriteCollectionCount };
 }
+
+export async function getDashboardCollections(
+  userId: string,
+): Promise<DashboardCollection[]> {
+  const rows = await prisma.collection.findMany({
+    where: { userId },
+    orderBy: { updatedAt: "desc" },
+    include: {
+      items: {
+        include: {
+          item: {
+            select: {
+              itemType: { select: { name: true, icon: true, color: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return rows.map((row) => {
+    const typeMap = new Map<string, TypeSummary>();
+    for (const { item } of row.items) {
+      const { itemType } = item;
+      const existing = typeMap.get(itemType.name);
+      if (existing) {
+        existing.count += 1;
+      } else {
+        typeMap.set(itemType.name, {
+          name: itemType.name,
+          icon: itemType.icon,
+          color: itemType.color,
+          count: 1,
+        });
+      }
+    }
+    const types = Array.from(typeMap.values()).sort((a, b) => {
+      if (b.count !== a.count) return b.count - a.count;
+      return a.name.localeCompare(b.name);
+    });
+    return {
+      id: row.id,
+      name: row.name,
+      description: row.description,
+      isFavorite: row.isFavorite,
+      itemCount: row.items.length,
+      updatedAt: row.updatedAt,
+      types,
+      dominantType: types[0] ?? null,
+    };
+  });
+}
