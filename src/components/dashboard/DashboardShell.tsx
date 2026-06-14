@@ -3,12 +3,20 @@
 import { useState } from 'react';
 import { PanelLeftClose, PanelLeftOpen, Menu } from 'lucide-react';
 import Sidebar from './Sidebar';
+import type { SidebarItemType } from '@/lib/db/item-types';
+import type { SidebarCollection } from '@/lib/db/collections';
+
+interface DashboardShellProps {
+  children: React.ReactNode;
+  sidebarItemTypes: SidebarItemType[];
+  sidebarCollections: SidebarCollection[];
+}
 
 export default function DashboardShell({
   children,
-}: {
-  children: React.ReactNode;
-}) {
+  sidebarItemTypes,
+  sidebarCollections,
+}: DashboardShellProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -41,7 +49,11 @@ export default function DashboardShell({
             )}
           </button>
         </div>
-        <Sidebar collapsed={collapsed} />
+        <Sidebar
+          collapsed={collapsed}
+          itemTypes={sidebarItemTypes}
+          collections={sidebarCollections}
+        />
       </aside>
 
       {/* Mobile drawer sidebar */}
@@ -66,7 +78,11 @@ export default function DashboardShell({
           </button>
         </div>
         <div className="flex-1 overflow-y-auto">
-          <Sidebar collapsed={false} />
+          <Sidebar
+            collapsed={false}
+            itemTypes={sidebarItemTypes}
+            collections={sidebarCollections}
+          />
         </div>
       </aside>
 
