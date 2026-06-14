@@ -44,5 +44,3 @@ next-env.d.ts
 # prisma 7 generated client
 /src/generated
 
-# personal notes (untracked; remove from index)
-_ref.txt
