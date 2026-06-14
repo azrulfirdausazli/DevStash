@@ -3,7 +3,10 @@ import { Star, Settings } from 'lucide-react';
 import type { SidebarItemType } from '@/lib/db/item-types';
 import type { SidebarCollection } from '@/lib/db/collections';
 import { getIcon } from '@/lib/db/icons';
+import { Badge } from '@/components/ui/badge';
 import SidebarSection from './SidebarSection';
+
+const PRO_TYPES = new Set(['file', 'image']);
 
 const TYPE_LABELS: Record<string, string> = {
   snippet: 'Snippets',
@@ -43,6 +46,11 @@ export default function Sidebar({ collapsed, itemTypes, collections }: SidebarPr
                   >
                     <Icon className="size-4 shrink-0" style={{ color: t.color }} />
                     <span className="flex-1">{label}</span>
+                    {PRO_TYPES.has(t.name) && (
+                      <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 leading-none font-semibold tracking-wide text-muted-foreground border-muted-foreground/40">
+                        PRO
+                      </Badge>
+                    )}
                   </Link>
                 );
               })}
