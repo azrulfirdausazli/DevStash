@@ -44,3 +44,18 @@ export async function getDashboardRecentItems(
     },
   });
 }
+
+export type DashboardItemStats = {
+  itemCount: number;
+  favoriteItemCount: number;
+};
+
+export async function getDashboardItemStats(
+  userId: string,
+): Promise<DashboardItemStats> {
+  const [itemCount, favoriteItemCount] = await Promise.all([
+    prisma.item.count({ where: { userId } }),
+    prisma.item.count({ where: { userId, isFavorite: true } }),
+  ]);
+  return { itemCount, favoriteItemCount };
+}

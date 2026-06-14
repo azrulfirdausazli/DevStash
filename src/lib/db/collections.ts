@@ -84,3 +84,52 @@ export async function getDashboardCollections(
     };
   });
 }
+
+export type SidebarCollection = {
+  id: string;
+  name: string;
+  isFavorite: boolean;
+  dominantTypeColor: string | null;
+};
+
+export async function getSidebarCollections(
+  userId: string,
+): Promise<SidebarCollection[]> {
+  const rows = await prisma.collection.findMany({
+    where: { userId },
+    orderBy: { updatedAt: "desc" },
+    take: 8,
+    include: {
+      items: {
+        include: {
+          item: {
+            select: {
+              itemType: { select: { color: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return rows.map((row) => {
+    const counts = new Map<string, { color: string; count: number }>();
+    for (const { item } of row.items) {
+      const { color } = item.itemType;
+      counts.set(color, {
+        color,
+        count: (counts.get(color)?.count ?? 0) + 1,
+      });
+    }
+    const dominant = Array.from(counts.values()).sort((a, b) => {
+      if (b.count !== a.count) return b.count - a.count;
+      return a.color.localeCompare(b.color);
+    })[0];
+    return {
+      id: row.id,
+      name: row.name,
+      isFavorite: row.isFavorite,
+      dominantTypeColor: dominant?.color ?? null,
+    };
+  });
+}
