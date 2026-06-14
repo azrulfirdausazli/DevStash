@@ -144,3 +144,16 @@ commit the features branch , merge with main , push main ,delete the feature bra
 
 41)
 add .env.production
+
+--add at vercel -> DATABASE_URL,DIRECT_URL
+ prisma generate && prisma migrate deploy && prisma db seed && next build 
+
+
+**************************** SECTION 07 ************************************
+42)Skill
+
+/feature load add-pro-badge-sidebar.md
+/feature start
+/feature review
+/feature explain
+/feature complete
