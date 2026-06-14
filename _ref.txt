@@ -127,3 +127,20 @@ commit the features branch , merge with main , push main ,delete the feature bra
 
 
 37 and 38 , lebih kurang sama
+
+39)
+
+update current features to the @context/current-feature.md .
+To implement @context/features/stats-sidebar-spec .
+set status to inprogress and set goals and notes if required
+
+open a new branch and implement the current features , 
+
+set the current feature to be complete, ,remove the info ,remove the goals and add it to history,
+please mention about spec and plan you generate in this process
+
+commit the features branch , merge with main , push main ,delete the feature branch
+
+
+41)
+add .env.production
