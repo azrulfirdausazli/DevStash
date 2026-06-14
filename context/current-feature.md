@@ -1,16 +1,27 @@
-# Current Feature
+# Current Feature: Audit Quick Wins (QW-2 through QW-6)
 
 ## Status
 
 <!-- Not Started|In Progress|Completed -->
 
-Completed
+In Progress
 
 ## Goals
 
 <!-- Current feature goals. Update as scope is refined. -->
 
-_(None — feature complete. See History below.)_
+- **QW-2**: Wrap `getCurrentUserId` in `src/lib/db/user.ts` with `React.cache()` to eliminate the duplicate Neon DB round-trip on every dashboard render
+- **QW-3**: Extract shared `formatDate` function into `src/lib/utils.ts` and remove the copy-pasted version from `PinnedItems.tsx` and `RecentItems.tsx`
+- **QW-4**: Remove the redundant `import "dotenv/config"` side-effect from `src/lib/prisma.ts` (line 1)
+- **QW-5**: Add `_ref.txt` to `.gitignore` and untrack it with `git rm --cached _ref.txt`
+- **QW-6**: Extract a shared `computeDominantColor` helper in `src/lib/db/collections.ts` to replace the two near-identical dominant-type aggregation implementations
+
+## Notes
+
+- QW-1 (delete `src/lib/mock-data.ts`) is intentionally excluded from this feature and should be addressed separately
+- All changes are low-risk cleanup — no new behaviour, no schema changes, no new UI
+- Deliver as a single branch `fix/audit-quick-wins`
+- Must pass `tsc --noEmit`, `npm run lint`, and `npm run build` before completing
 
 ## History
 
@@ -28,3 +39,64 @@ _(None — feature complete. See History below.)_
 - 2026-06-14: **Add Pro Badge to Sidebar** completed on `feature/add-pro-badge-sidebar`. **Goals:** add a shadcn/ui `Badge` component next to the "Files" and "Images" type rows in the sidebar Types section; badge must be clean/subtle and display `PRO` in all caps. **Implementation:** installed `src/components/ui/badge.tsx` via `npx shadcn@latest add badge`; added `PRO_TYPES = new Set(['file', 'image'])` constant to `src/components/dashboard/Sidebar.tsx`; rendered `<Badge variant="outline">` with `text-[10px] h-4 px-1 py-0 text-muted-foreground border-muted-foreground/40` overrides — small, low-contrast, outline-only — inline after the type label in the expanded (non-collapsed) sidebar branch only; collapsed icon-only view is unaffected. `tsc --noEmit` + `lint` + `build` all green.
 
 - 2026-06-14: **Stats & Sidebar — Wire to Real Database Data** completed on `feature/stats-sidebar-db`. **Spec & Plan:** source spec `context/features/stats-sidebar-spec.md`; design doc `docs/superpowers/specs/2026-06-14-stats-sidebar-design.md`; implementation plan `docs/superpowers/plans/2026-06-14-stats-sidebar.md`. **Goals:** wire the dashboard's main-area stats cards and the entire sidebar (Types + Collections) to real Prisma data from Neon, ending the dashboard's reliance on `src/lib/mock-data.ts` for these surfaces. The 2 item-related stat cards (`Items`, `Favorite Items`) — hardcoded to `0` since `feature/dashboard-collections-db` — now show real counts. The sidebar Types section shows the 7 system `ItemType` rows (alphabetical, with icon + color from the DB). The sidebar Collections section shows favorites with the existing yellow star, and the "All Collections" (= recents) list shows a small colored `span` (12px, rounded-full) per row whose color is the dominant item type in that collection. A new "View all collections" `<Link href="/collections">` is rendered at the bottom of the All Collections list. **Process — relied on the `superpowers` opencode plugin skills:** `brainstorming` (collected 2 clarifying questions on `items.ts` scope + which "recents" list gets the colored circle, presented design, got approval), `using-git-worktrees`-equivalent (branch isolation, created `feature/stats-sidebar-db` from main per established workflow), `writing-plans` (produced the plan), then `subagent-driven-development` (7-task implementation with spec+quality review per task). **Implementation:** added `getDashboardItemStats` (parallel `prisma.item.count` calls for `itemCount` + `favoriteItemCount`) to `src/lib/db/items.ts`; added `getSidebarCollections` (returns 8 most-recently-updated collections with `{ id, name, isFavorite, dominantTypeColor }` after running the same dominant-type aggregation as `getDashboardCollections` in JS, with `localeCompare` color tie-breaker) to `src/lib/db/collections.ts`; new `src/lib/db/item-types.ts` with `getSidebarItemTypes` (`where: { isSystem: true }, orderBy: { name: "asc" }, select: { name, icon, color }`); new `src/components/dashboard/SidebarSection.tsx` — a small client component that owns the `useState` for the collapse toggle and renders the label + chevron + `children`. Refactored `src/components/dashboard/Sidebar.tsx` to be a **server component** (dropped `'use client'`, `useState`, `mockCollections`, `mockItemTypeCounts`, `mockUser`, the hardcoded `itemTypes` array, and 7 `lucide-react` icon imports; added `TYPE_LABELS` map for the pluralized display labels since the DB stores singular type names; replaced the inline toggle `button`s with `<SidebarSection>`; rendered a `size-2.5 rounded-full` `span` per non-favorite collection row with `style={{ backgroundColor: c.dominantTypeColor }}` + `aria-hidden`; appended the "View all collections" link). User-avatar block now uses hardcoded `D` / `Demo User` / `demo@devstash.io` (matches the seed) to stop reading from `mockUser` — minimal change; the next feature can plumb in the real `User` row. Extended `src/components/dashboard/DashboardShell.tsx` to accept + forward `sidebarItemTypes` + `sidebarCollections` to both the desktop and mobile-drawer `<Sidebar>` instances. **Plan-correction mid-implementation:** the original plan's Task 7 placed all 7 db calls + the `<DashboardShell>` wrap inside `page.tsx`, but the `<DashboardShell>` is actually rendered in `layout.tsx`. Task 6's implementer caught this and the corrected Task 7 splits the data fetching: layout owns the 2 sidebar db calls + the `<DashboardShell>` wrap (now async), page keeps the 5 main-area db calls + renders only the main content. `src/app/dashboard/layout.tsx` is now `async`; `src/app/dashboard/page.tsx` `Promise.all` is now 5 entries (adds `getDashboardItemStats`); the 2 hardcoded `0` placeholders in `StatsCards` are replaced with `itemStats.itemCount` + `itemStats.favoriteItemCount`. **Verification:** `npx tsc --noEmit` + `npm run lint` + `npm run build` all green; `npm run dev` → `/dashboard` confirms the 4 stats cards show real DB values (no more `0` placeholders), the sidebar Types section lists 7 rows in alphabetical order with correct icons + colors, the sidebar Collections section shows the favorites with yellow stars and the "All Collections" (= recents) list with colored circles matching the dominant item type per collection, and the "View all collections" link is visible at the bottom of the All Collections list. Main-area `RecentCollections` grid + Pinned + Recent Items sections are unchanged. `src/lib/mock-data.ts` is now unreferenced in `src/` (still in the file tree; full removal is a separate cleanup per `ai-interaction.md`).
+
+---
+
+## Quick Wins — Codebase Audit (2026-06-14)
+
+Identified during a full audit of the codebase. Each item is low-risk and can be completed in under an hour. Address as a single cleanup branch (`fix/audit-quick-wins`) or individually.
+
+### QW-1: Delete unreferenced `mock-data.ts`
+- **File**: `src/lib/mock-data.ts`
+- **Issue**: This file is fully unreferenced across all of `src/` since the stats-sidebar feature was merged. The history notes explicitly flag it for removal.
+- **Fix**: Delete `src/lib/mock-data.ts`. Verify `npm run build` still passes.
+
+### QW-2: Eliminate duplicate `getCurrentUserId()` call on every dashboard render
+- **Files**: `src/app/dashboard/layout.tsx` (line ~12), `src/app/dashboard/page.tsx` (line ~17)
+- **Issue**: Both `layout.tsx` and `page.tsx` independently call `getCurrentUserId()`, which fires a `prisma.user.findUnique` query against Neon on every page load — that is two separate network round-trips for an identical, fixed result. On a cold serverless Neon instance this costs an extra 15+ ms per request.
+- **Fix**: Pass the resolved `userId` down from `layout.tsx` as a prop to a wrapper component (or extract it into a shared cached helper using React's `cache()` from `'react'`). The cleanest approach is to wrap `getCurrentUserId` with `cache`:
+  ```ts
+  // src/lib/db/user.ts
+  import { cache } from 'react';
+  export const getCurrentUserId = cache(async (): Promise<string> => { ... });
+  ```
+  `React.cache` deduplicates calls within the same server render tree, so both layout and page share the single result without any prop-drilling changes.
+
+### QW-3: Extract shared `formatDate` utility
+- **Files**: `src/components/dashboard/PinnedItems.tsx` (line ~5), `src/components/dashboard/RecentItems.tsx` (line ~5)
+- **Issue**: An identical `formatDate(date: Date): string` function is copy-pasted in both files. Any future change (locale, format options) must be made in two places.
+- **Fix**: Move the function to `src/lib/utils.ts` (or a new `src/lib/format.ts`) and import it in both components:
+  ```ts
+  // src/lib/utils.ts
+  export function formatDate(date: Date): string {
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+  ```
+
+### QW-4: Remove `dotenv/config` side-effect import from `src/lib/prisma.ts`
+- **File**: `src/lib/prisma.ts` (line 1)
+- **Issue**: `import "dotenv/config"` is a side-effect import that calls `dotenv.config()` at module load time inside the Next.js runtime. Next.js already handles `.env` file loading through its own system. This import is redundant in the app runtime and could silently shadow or conflict with Next.js's variable loading order. It belongs only in CLI scripts (`seed.ts`, `test-db.ts`) that run outside Next.js.
+- **Fix**: Remove line 1 (`import "dotenv/config"`) from `src/lib/prisma.ts`. The `scripts/` and `prisma/` files that actually need it already import it independently.
+
+### QW-5: Add `_ref.txt` to `.gitignore`
+- **File**: `_ref.txt` (project root)
+- **Issue**: `_ref.txt` contains course session notes and is currently tracked by git (it shows as modified in the git status). It is personal scratch content that should not be version-controlled.
+- **Fix**: Add `_ref.txt` to `.gitignore`, then run `git rm --cached _ref.txt` to stop tracking it without deleting the local file.
+
+### QW-6: Consolidate duplicated dominant-type aggregation logic
+- **File**: `src/lib/db/collections.ts` (lines ~55-84 in `getDashboardCollections` and lines ~116-127 in `getSidebarCollections`)
+- **Issue**: The logic to compute a collection's dominant item type (build a frequency map, sort by count then name/color as tiebreaker) is implemented twice with minor variations. Any bug fix or change in tie-breaking behavior must be applied in both places.
+- **Fix**: Extract a private helper function at the top of the file:
+  ```ts
+  function computeDominantColor(items: { item: { itemType: { color: string } } }[]): string | null {
+    const counts = new Map<string, { color: string; count: number }>();
+    for (const { item } of items) {
+      const { color } = item.itemType;
+      counts.set(color, { color, count: (counts.get(color)?.count ?? 0) + 1 });
+    }
+    return Array.from(counts.values()).sort((a, b) =>
+      b.count !== a.count ? b.count - a.count : a.color.localeCompare(b.color)
+    )[0]?.color ?? null;
+  }
+  ```
+  Both functions then call this helper rather than reimplementing it.

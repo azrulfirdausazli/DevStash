@@ -1,10 +1,7 @@
 import { Clock, Star } from "lucide-react";
 import type { DashboardItem } from "@/lib/db/items";
 import { getIcon } from "@/lib/db/icons";
-
-function formatDate(date: Date): string {
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
+import { formatDate } from "@/lib/utils";
 
 export default function RecentItems({ items }: { items: DashboardItem[] }) {
   return (

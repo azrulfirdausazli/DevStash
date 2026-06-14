@@ -1,8 +1,9 @@
+import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 
 const DEMO_USER_EMAIL = "demo@devstash.io";
 
-export async function getCurrentUserId(): Promise<string> {
+export const getCurrentUserId = cache(async (): Promise<string> => {
   const user = await prisma.user.findUnique({
     where: { email: DEMO_USER_EMAIL },
     select: { id: true },
@@ -13,4 +14,4 @@ export async function getCurrentUserId(): Promise<string> {
     );
   }
   return user.id;
-}
+});

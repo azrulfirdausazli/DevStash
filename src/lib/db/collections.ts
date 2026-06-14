@@ -1,5 +1,20 @@
 import { prisma } from "@/lib/prisma";
 
+function computeDominantColor(
+  items: { item: { itemType: { color: string } } }[],
+): string | null {
+  const counts = new Map<string, { color: string; count: number }>();
+  for (const { item } of items) {
+    const { color } = item.itemType;
+    counts.set(color, { color, count: (counts.get(color)?.count ?? 0) + 1 });
+  }
+  return (
+    Array.from(counts.values()).sort((a, b) =>
+      b.count !== a.count ? b.count - a.count : a.color.localeCompare(b.color),
+    )[0]?.color ?? null
+  );
+}
+
 export type TypeSummary = {
   name: string;
   icon: string;
@@ -72,6 +87,7 @@ export async function getDashboardCollections(
       if (b.count !== a.count) return b.count - a.count;
       return a.name.localeCompare(b.name);
     });
+    const dominantColor = computeDominantColor(row.items);
     return {
       id: row.id,
       name: row.name,
@@ -80,7 +96,7 @@ export async function getDashboardCollections(
       itemCount: row.items.length,
       updatedAt: row.updatedAt,
       types,
-      dominantType: types[0] ?? null,
+      dominantType: types.find((t) => t.color === dominantColor) ?? null,
     };
   });
 }
@@ -112,24 +128,10 @@ export async function getSidebarCollections(
     },
   });
 
-  return rows.map((row) => {
-    const counts = new Map<string, { color: string; count: number }>();
-    for (const { item } of row.items) {
-      const { color } = item.itemType;
-      counts.set(color, {
-        color,
-        count: (counts.get(color)?.count ?? 0) + 1,
-      });
-    }
-    const dominant = Array.from(counts.values()).sort((a, b) => {
-      if (b.count !== a.count) return b.count - a.count;
-      return a.color.localeCompare(b.color);
-    })[0];
-    return {
-      id: row.id,
-      name: row.name,
-      isFavorite: row.isFavorite,
-      dominantTypeColor: dominant?.color ?? null,
-    };
-  });
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    isFavorite: row.isFavorite,
+    dominantTypeColor: computeDominantColor(row.items),
+  }));
 }
