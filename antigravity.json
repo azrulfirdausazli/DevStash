@@ -1,0 +1,9 @@
+{
+  "$schema": "https://antigravity.dev/config.json",
+  "skills": {
+    "paths": [
+      "./.claude/skills/cleanup/SKILL.md",
+      "./.claude/skills/feature/SKILL.md"
+    ]
+  }
+}
