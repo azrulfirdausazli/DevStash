@@ -271,7 +271,6 @@ These three lines are added to `.env` (not committed) and `.env.example` documen
 | `next-auth@beta` vs `@latest` confusion | Spec mandates `@beta`; package.json comment notes the v4 trap. CI/install runs use `@beta` explicitly. |
 | Prisma adapter + JWT strategy subtlety (JWT is required for OAuth-only with the adapter in v5) | Spec mandates JWT; design matches Context7-verified pattern. |
 | Proxy matcher not excluding `api/auth/*` (the redirect target) | Matcher's strict path match (`/dashboard/:path*`) means the proxy never fires for `/api/auth/*`. Sign-in works. |
-| `prisma.user.findUnique` on the demo user is removed, breaking tests that depend on it | The `scripts/test-db.ts` and `scripts/test-collections.ts` scripts read raw data; they don't import `getCurrentUserId`. Verified via grep. |
 | `getCurrentUserId` is called in `page.tsx` and `layout.tsx` — both will await the same session | `cache()` wrapper deduplicates within a single render. Same as before. |
 | `prisma` import inside `auth.ts` is now a transitive dep of every server component (via `getCurrentUserId`) | This is already true today (`getCurrentUserId` already calls `prisma.user.findUnique`). No new coupling. |
 | Proxy throws on first sign-in if cookies are partitioned by browser | Standard NextAuth issue. Solution: set `cookies.secure` and use `__Secure-` cookie prefix in production. Out of scope for Phase 1 (local dev). |
