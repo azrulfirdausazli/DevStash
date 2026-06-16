@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@/generated/prisma/client";
 import { hash } from "bcryptjs";
 
 export async function POST(request: NextRequest) {
@@ -9,6 +10,13 @@ export async function POST(request: NextRequest) {
     if (!name || !email || !password || !confirmPassword) {
       return NextResponse.json(
         { error: "All fields are required" },
+        { status: 400 },
+      );
+    }
+
+    if (typeof password !== "string") {
+      return NextResponse.json(
+        { error: "Password must be a string" },
         { status: 400 },
       );
     }
@@ -27,8 +35,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const normalizedEmail = email.toLowerCase();
+
     const existingUser = await prisma.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
     });
 
     if (existingUser) {
@@ -43,7 +53,7 @@ export async function POST(request: NextRequest) {
     const user = await prisma.user.create({
       data: {
         name,
-        email,
+        email: normalizedEmail,
         password: hashedPassword,
         emailVerified: new Date(),
       },
@@ -57,6 +67,15 @@ export async function POST(request: NextRequest) {
       { status: 201 },
     );
   } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return NextResponse.json(
+        { error: "A user with this email already exists" },
+        { status: 409 },
+      );
+    }
     console.error("Registration error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
