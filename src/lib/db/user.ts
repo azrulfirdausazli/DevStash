@@ -1,17 +1,13 @@
 import { cache } from "react";
-import { prisma } from "@/lib/prisma";
-
-const DEMO_USER_EMAIL = "demo@devstash.io";
+import { auth } from "@/auth";
 
 export const getCurrentUserId = cache(async (): Promise<string> => {
-  const user = await prisma.user.findUnique({
-    where: { email: DEMO_USER_EMAIL },
-    select: { id: true },
-  });
-  if (!user) {
+  const session = await auth();
+  if (!session?.user?.id) {
     throw new Error(
-      `Demo user "${DEMO_USER_EMAIL}" not found. Run \`npm run db:seed\` to create it.`,
+      "Unauthenticated request reached a server component. " +
+        "The /dashboard/* proxy should have redirected to /api/auth/signin before this.",
     );
   }
-  return user.id;
+  return session.user.id;
 });
