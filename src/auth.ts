@@ -12,6 +12,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     GitHub,
     Credentials({
       authorize: async (credentials) => {
+        if (!credentials) return null;
+
         const { email, password } = credentials as {
           email: string;
           password: string;
