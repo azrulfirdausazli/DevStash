@@ -1,6 +1,5 @@
 import "dotenv/config";
 import { prisma } from "../src/lib/prisma";
-import { getCurrentUserId } from "../src/lib/db/user";
 import {
   getDashboardCollectionStats,
   getDashboardCollections,
@@ -8,7 +7,14 @@ import {
 
 async function main() {
   console.log("Looking up demo user...");
-  const userId = await getCurrentUserId();
+  const user = await prisma.user.findUnique({
+    where: { email: "demo@devstash.io" },
+    select: { id: true },
+  });
+  if (!user) {
+    throw new Error('Demo user "demo@devstash.io" not found. Run `npm run db:seed`.');
+  }
+  const userId = user.id;
   console.log(`  userId = ${userId}\n`);
 
   console.log("Collection stats...");
