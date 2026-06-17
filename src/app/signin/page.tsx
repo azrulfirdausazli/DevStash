@@ -2,17 +2,26 @@ import { auth, signIn } from "@/auth";
 import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { checkSignInLimit } from "@/lib/rate-limit";
+
+function getSafeCallbackUrl(callbackUrl: string | undefined): string {
+  if (!callbackUrl) return "/dashboard";
+  // Only allow relative paths to prevent open redirect
+  if (callbackUrl.startsWith("/") && !callbackUrl.startsWith("//")) return callbackUrl;
+  return "/dashboard";
+}
 
 export default async function SignInPage({
   searchParams,
 }: {
-  searchParams: Promise<{ callbackUrl?: string; registered?: string; deleted?: string; error?: string }>;
+  searchParams: Promise<{ callbackUrl?: string; registered?: string; deleted?: string; error?: string; retry?: string }>;
 }) {
   const session = await auth();
-  const { callbackUrl, registered, deleted, error } = await searchParams;
+  const { callbackUrl, registered, deleted, error, retry } = await searchParams;
+  const safeCallbackUrl = getSafeCallbackUrl(callbackUrl);
 
   if (session) {
-    redirect(callbackUrl ?? "/dashboard");
+    redirect(safeCallbackUrl);
   }
 
   return (
@@ -43,20 +52,34 @@ export default async function SignInPage({
           </div>
         )}
 
+        {error === "rate_limited" && (
+          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+            Too many sign-in attempts. Please try again in {retry ?? "a few"} minutes.
+          </div>
+        )}
+
         <form
           action={async (formData: FormData) => {
             "use server";
+            const email = (formData.get("email") as string) ?? "";
+
+            const limit = await checkSignInLimit(email);
+            if (!limit.success) {
+              const mins = Math.ceil(limit.retryAfterSeconds / 60);
+              redirect(`/signin?error=rate_limited&retry=${mins}`);
+            }
+
             try {
               await signIn("credentials", {
-                email: formData.get("email"),
+                email,
                 password: formData.get("password"),
-                redirectTo: "/dashboard",
+                redirectTo: safeCallbackUrl,
               });
-            } catch (error) {
-              if (error instanceof AuthError && error.type === "CredentialsSignin") {
+            } catch (err) {
+              if (err instanceof AuthError && err.type === "CredentialsSignin") {
                 redirect("/signin?error=invalid_credentials");
               }
-              throw error;
+              throw err;
             }
           }}
           className="space-y-4"
@@ -101,7 +124,7 @@ export default async function SignInPage({
         <form
           action={async () => {
             "use server";
-            await signIn("github", { redirectTo: callbackUrl ?? "/dashboard" });
+            await signIn("github", { redirectTo: safeCallbackUrl });
           }}
         >
           <button

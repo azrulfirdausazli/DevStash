@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod/v4";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { checkRegisterLimit } from "@/lib/rate-limit";
 
 const registerSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -11,6 +12,14 @@ const registerSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const limit = await checkRegisterLimit();
+  if (!limit.success) {
+    return NextResponse.json(
+      { error: `Too many attempts. Please try again in ${Math.ceil(limit.retryAfterSeconds / 60)} minutes.` },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } },
+    );
+  }
+
   try {
     const body = await request.json();
     const parsed = registerSchema.safeParse(body);
