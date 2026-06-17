@@ -1,14 +1,15 @@
 import { auth, signIn } from "@/auth";
+import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
 export default async function SignInPage({
   searchParams,
 }: {
-  searchParams: Promise<{ callbackUrl?: string; registered?: string }>;
+  searchParams: Promise<{ callbackUrl?: string; registered?: string; deleted?: string; error?: string }>;
 }) {
   const session = await auth();
-  const { callbackUrl, registered } = await searchParams;
+  const { callbackUrl, registered, deleted, error } = await searchParams;
 
   if (session) {
     redirect(callbackUrl ?? "/dashboard");
@@ -30,14 +31,33 @@ export default async function SignInPage({
           </div>
         )}
 
+        {deleted === "true" && (
+          <div className="rounded-md bg-emerald-500/10 p-3 text-sm text-emerald-600 dark:text-emerald-400">
+            Your account has been deleted.
+          </div>
+        )}
+
+        {error === "invalid_credentials" && (
+          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+            Invalid email or password. Please try again.
+          </div>
+        )}
+
         <form
           action={async (formData: FormData) => {
             "use server";
-            await signIn("credentials", {
-              email: formData.get("email"),
-              password: formData.get("password"),
-              redirectTo: "/dashboard",
-            });
+            try {
+              await signIn("credentials", {
+                email: formData.get("email"),
+                password: formData.get("password"),
+                redirectTo: "/dashboard",
+              });
+            } catch (error) {
+              if (error instanceof AuthError && error.type === "CredentialsSignin") {
+                redirect("/signin?error=invalid_credentials");
+              }
+              throw error;
+            }
           }}
           className="space-y-4"
         >

@@ -4,8 +4,7 @@ import type { SidebarItemType } from '@/lib/db/item-types';
 import type { SidebarCollection } from '@/lib/db/collections';
 import { getIcon } from '@/lib/db/icons';
 import { Badge } from '@/components/ui/badge';
-import UserAvatar from '@/components/auth/UserAvatar';
-import { signOutAction } from '@/actions/signout';
+import UserMenu from '@/components/dashboard/UserMenu';
 import SidebarSection from './SidebarSection';
 
 const PRO_TYPES = new Set(['file', 'image']);
@@ -136,40 +135,13 @@ export default function Sidebar({ collapsed, itemTypes, collections, user }: Sid
 
       {/* User avatar */}
       <div className="px-3 pt-2 border-t border-border">
-        <form action={signOutAction}>
-          <div className="relative group">
-            <button
-              type="button"
-              className="flex w-full items-center gap-2.5 px-2 py-2 rounded-md hover:bg-muted/50 transition-colors"
-            >
-              <UserAvatar src={user.image} name={user.name} />
-              {!collapsed && (
-                <div className="flex-1 min-w-0 text-left">
-                  <p className="text-sm font-medium truncate leading-tight">{user.name}</p>
-                  <p className="text-xs text-muted-foreground truncate leading-tight">{user.email}</p>
-                </div>
-              )}
-            </button>
-            {!collapsed && (
-              <div className="absolute bottom-full left-0 right-0 mb-1 hidden group-focus-within:block group-hover:block">
-                <div className="rounded-md border bg-popover p-1 shadow-md">
-                  <Link
-                    href="/profile"
-                    className="block px-3 py-1.5 text-sm rounded hover:bg-muted/50"
-                  >
-                    View Profile
-                  </Link>
-                  <button
-                    type="submit"
-                    className="block w-full text-left px-3 py-1.5 text-sm rounded hover:bg-muted/50 text-destructive"
-                  >
-                    Sign out
-                  </button>
-                </div>
-              </div>
-            )}
+        {collapsed ? (
+          <div className="flex justify-center">
+            <UserMenu user={user} />
           </div>
-        </form>
+        ) : (
+          <UserMenu user={user} />
+        )}
       </div>
     </div>
   );
