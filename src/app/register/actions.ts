@@ -4,6 +4,7 @@ import { z } from "zod/v4";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { checkRegisterLimit } from "@/lib/rate-limit";
 
 const registerSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -22,6 +23,12 @@ export async function registerUser(
   prevState: RegisterState,
   formData: FormData,
 ): Promise<RegisterState> {
+  const limit = await checkRegisterLimit();
+  if (!limit.success) {
+    const mins = Math.ceil(limit.retryAfterSeconds / 60);
+    return { error: `Too many attempts. Please try again in ${mins} minutes.` };
+  }
+
   const raw = {
     name: formData.get("name") as string,
     email: formData.get("email") as string,
