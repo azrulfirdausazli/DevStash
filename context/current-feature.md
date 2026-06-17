@@ -1,20 +1,25 @@
 # Current Feature
 
+Auth Phase 2 — Credentials Email/Password Provider
+
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
-
-Completed
+Not Started
 
 ## Goals
 
-<!-- Current feature goals. Update as scope is refined. -->
-
-_(None — feature complete. See History below.)_
+- Add Credentials provider for email/password auth to auth.config.ts (placeholder) and auth.ts (bcrypt validation)
+- Create `POST /api/auth/register` route (name, email, password, confirmPassword)
+- Validate passwords match, check existing user, hash with bcryptjs, create user
+- Test via curl, signin page, and verify GitHub OAuth still works
 
 ## Notes
 
-<!-- Additional context, constraints, or details -->
+- Spec: `context/features/auth-phase-2-spec.md`
+- password field already exists on User model in schema — no migration needed
+- bcryptjs already installed
+- Files to modify: `src/auth.config.ts`, `src/auth.ts`
+- Files to create: `src/app/api/auth/register/route.ts`
 
 ## History
 
