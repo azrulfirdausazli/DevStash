@@ -3,12 +3,20 @@ import DashboardShell from '@/components/dashboard/DashboardShell';
 import { getCurrentUserId } from '@/lib/db/user';
 import { getSidebarCollections } from '@/lib/db/collections';
 import { getSidebarItemTypes } from '@/lib/db/item-types';
+import { auth } from "@/auth";
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth();
+  const user = {
+    name: session?.user?.name ?? "User",
+    email: session?.user?.email ?? "",
+    image: session?.user?.image ?? null,
+  };
+
   const userId = await getCurrentUserId();
   const [sidebarItemTypes, sidebarCollections] = await Promise.all([
     getSidebarItemTypes(),
@@ -21,6 +29,7 @@ export default async function DashboardLayout({
       <DashboardShell
         sidebarItemTypes={sidebarItemTypes}
         sidebarCollections={sidebarCollections}
+        user={user}
       >
         {children}
       </DashboardShell>

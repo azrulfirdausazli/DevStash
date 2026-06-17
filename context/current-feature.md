@@ -1,20 +1,25 @@
 # Current Feature
 
+Auth Phase 3 — Auth UI: Sign In, Register & Sign Out
+
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
-
-Completed
+In Progress — uncommitted changes on `feature/auth-phase-3`
 
 ## Goals
 
-<!-- Current feature goals. Update as scope is refined. -->
-
-_(None — feature complete. See History below.)_
+- Restyle `/signin` (existing) or move to `/sign-in` with email/password + GitHub button + link to register
+- Create `/register` page with name, email, password, confirmPassword — submits to `/api/auth/register`
+- Add user avatar in sidebar bottom (GitHub image or initials fallback)
+- Dropdown/up on avatar click with "Sign out" link and link to `/profile`
 
 ## Notes
 
-<!-- Additional context, constraints, or details -->
+- Spec: `context/features/auth-phase-3-spec.md`
+- Phase 2 already created `/signin` (no hyphen) — spec says `/sign-in` (with hyphen). Clarify which route.
+- Need reusable `UserAvatar` component for GitHub image / initials fallback
+- Sign-out via `signOut()` from `@/auth`
+- Existing `auth.config.ts` pages config points to `/signin` — will need updating if route changes
 
 ## History
 

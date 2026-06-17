@@ -1,9 +1,11 @@
 import Link from 'next/link';
-import { Star, Settings } from 'lucide-react';
+import { Star } from 'lucide-react';
 import type { SidebarItemType } from '@/lib/db/item-types';
 import type { SidebarCollection } from '@/lib/db/collections';
 import { getIcon } from '@/lib/db/icons';
 import { Badge } from '@/components/ui/badge';
+import UserAvatar from '@/components/auth/UserAvatar';
+import { signOutAction } from '@/actions/signout';
 import SidebarSection from './SidebarSection';
 
 const PRO_TYPES = new Set(['file', 'image']);
@@ -22,9 +24,10 @@ interface SidebarProps {
   collapsed: boolean;
   itemTypes: SidebarItemType[];
   collections: SidebarCollection[];
+  user: { name: string; email: string; image: string | null };
 }
 
-export default function Sidebar({ collapsed, itemTypes, collections }: SidebarProps) {
+export default function Sidebar({ collapsed, itemTypes, collections, user }: SidebarProps) {
   const favoriteCollections = collections.filter((c) => c.isFavorite);
   const allCollections = collections.filter((c) => !c.isFavorite);
 
@@ -133,24 +136,40 @@ export default function Sidebar({ collapsed, itemTypes, collections }: SidebarPr
 
       {/* User avatar */}
       <div className="px-3 pt-2 border-t border-border">
-        <div className="flex items-center gap-2.5 px-2 py-2 rounded-md hover:bg-muted/50 transition-colors cursor-pointer">
-          <div className="size-7 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold shrink-0">
-            D
-          </div>
-          {!collapsed && (
-            <>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate leading-tight">
-                  Demo User
-                </p>
-                <p className="text-xs text-muted-foreground truncate leading-tight">
-                  demo@devstash.io
-                </p>
+        <form action={signOutAction}>
+          <div className="relative group">
+            <button
+              type="button"
+              className="flex w-full items-center gap-2.5 px-2 py-2 rounded-md hover:bg-muted/50 transition-colors"
+            >
+              <UserAvatar src={user.image} name={user.name} />
+              {!collapsed && (
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-sm font-medium truncate leading-tight">{user.name}</p>
+                  <p className="text-xs text-muted-foreground truncate leading-tight">{user.email}</p>
+                </div>
+              )}
+            </button>
+            {!collapsed && (
+              <div className="absolute bottom-full left-0 right-0 mb-1 hidden group-focus-within:block group-hover:block">
+                <div className="rounded-md border bg-popover p-1 shadow-md">
+                  <Link
+                    href="/profile"
+                    className="block px-3 py-1.5 text-sm rounded hover:bg-muted/50"
+                  >
+                    View Profile
+                  </Link>
+                  <button
+                    type="submit"
+                    className="block w-full text-left px-3 py-1.5 text-sm rounded hover:bg-muted/50 text-destructive"
+                  >
+                    Sign out
+                  </button>
+                </div>
               </div>
-              <Settings className="size-4 text-muted-foreground shrink-0" />
-            </>
-          )}
-        </div>
+            )}
+          </div>
+        </form>
       </div>
     </div>
   );
